@@ -1,0 +1,13 @@
+
+bac
+.idea
+
+# files&folders created by testing
+composer.phar
+composer-dl.inc
+composer.json
+composer.lock
+backend
+vendor
+cache
+index.php

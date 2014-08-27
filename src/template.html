@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>cms-kit package installer</title>
+<meta charset="utf-8" />
+<style>
+/* HTML5 Boilerplate */
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section { display: block; }
+audio, canvas, video { display: inline-block; *display: inline; *zoom: 1; }
+audio:not([controls]) { display: none; }
+[hidden] { display: none; }
+
+html { font-size: 100%; overflow-y: scroll; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+body { margin: 0; font-size: 13px; line-height: 1.231; }
+body, button, input, select, textarea { font-family: sans-serif; color: #222; }
+
+a { color: #00e; }
+a:visited { color: #551a8b; }
+a:hover { color: #06e; }
+a:focus { outline: thin dotted; }
+a:hover, a:active { outline: 0; }
+
+
+/* custom styles */
+div {
+	width:600px;
+	margin: auto;
+}
+ul{
+	
+	list-style-type: none;
+	
+}
+li {
+	border-bottom: 1px solid #333;
+	padding: 5px;
+}
+.pspan{float:right}
+
+.loginbox {
+	width: 300px;
+	border: 1px solid #ccc;
+	padding: 5px;
+	margin: auto;
+	margin-top: 100px;
+}
+
+#spinner{
+	position :absolute;
+	display:none;
+	z-index: 1;
+	top: 40%;
+	left: 50%;
+	margin-left:-64px;
+}
+
+</style>
+
+<link rel="stylesheet" type="text/css" href="vendor/cmskit/jquery-ui/themes/smoothness/jquery-ui.css" />
+<script type="text/javascript" src="vendor/cmskit/jquery-ui/jquery.min.js"></script>
+<script type="text/javascript" src="vendor/cmskit/jquery-ui/jquery-ui.min.js"></script>
+
+<script type="text/javascript">
+if (typeof jQuery == "undefined") {
+    document.writeln(unescape("%3Crel=\'stylesheet\' type=\'text/css\' href=\'http://code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css\' /%3E"));
+    document.writeln(unescape("%3Cscript src=\'http://code.jquery.com/jquery-1.11.1.min.js\' type=\'text/javascript\'%3E%3C/script%3E"));
+    document.writeln(unescape("%3Cscript src=\'http://code.jquery.com/ui/1.11.1/jquery-ui.min.js\' type=\'text/javascript\'%3E%3C/script%3E"));
+}
+</script>
+
+<script>
+$(document).ready(function()
+{
+	$("button").each(function()
+	{
+		if($(this).attr("rel"))
+		{
+			$(this).button({
+				icons:{primary:"ui-icon-"+$(this).attr("rel")}, 
+				text:false
+			})
+		}
+	});
+	//
+	$(".package").button().on("click", function()
+	{
+		var c = $(this).text() === "'.L('install').'",
+			q = confirm("'.L('do_you_really_want_to').' "+$(this).text()+" '.L('the_package').' \""+$(this).data("name")+"\"?");
+
+		if (q)
+		{
+			
+			$("#spinner").show();
+			$.post("install.php",
+			{
+				action: c,
+				name: $(this).data("name"),
+				version: $(this).data("version")
+			},
+			function(d) {
+				$("#spinner").hide();
+				alert(d);
+			});
+			
+			var options;
+			if (c) {
+				options = {
+					label: "'.L('uninstall').'",
+					icons: {
+						primary: "ui-icon-trash"
+					}
+				};
+			} else {
+				options = {
+					label: "'.L('install').'",
+					icons: {
+						primary: "ui-icon-disk"
+					}
+				};
+			}
+			$(this).button("option", options);
+		}
+	});
+});
+</script>
+</head>
+<body>
+<!--===--><!-- do not remove the comments!! -->
+
+
+
+<!--===-->
+</body>
+</html>
