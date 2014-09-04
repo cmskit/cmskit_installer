@@ -61,50 +61,77 @@ if (file_exists('composer.lock')) {
     $installAction = 'update';
 }
 
-// process $_POST if we get an action
-if (!empty($_POST['action'])) {
-    if ($_POST['action'] == 'true') {
-        $composerJson['require'][$_POST['name']] = $_POST['version'];
-        echo L('element_added') . "\n";
-    }
-    if ($_POST['action'] == 'false') {
-        unset($composerJson['require'][$_POST['name']]);
-        echo L('element_removed') . "\n";
-    }
-
-    $json = stripslashes(json_encode($composerJson));
-    file_put_contents('composer.json', $json);
-    chmod('composer.json', 0777);
-
-    // call composer itself ////////////////////////////////////////////////////////////////////
-
-    // define some environment variables for the commandline application
-    putenv('PATH=' . $_SERVER['PATH']);
-    putenv('COMPOSER_HOME=' . __DIR__);
-    putenv('HOME=' . __DIR__);
-
-    // call composer via command line
-    passthru('php composer.phar ' . $installAction . ' --no-interaction', $out);
-    echo $out;
-
-    // fix the access rights
-    foreach (array('backend', 'vendor', 'cache') as $dir) {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
-        foreach ($iterator as $item) {
-            chmod($item, 0777);
-        }
-    }
-    unlink('.htaccess');
-
-    exit;
-}
-
 // download + parse "suggestions" from webserver
 $suggestions = json_decode(download($serviceUrl . '/?' . http_build_query($_GET)), true);
 
 
-// create the list of packages ///////////////////////////////////////////
+// process $_POST if we get an action
+if (!empty($_POST['action'])) {
 
+    if (isset($suggestions['packages'][$_POST['name']])) {
+
+        // action "add it to the list"
+        if ($_POST['action'] == 'true') {
+
+            // add the package to the list
+            $composerJson['require'][$_POST['name']] = $suggestions['packages'][$_POST['name']]['version'];
+
+            // add required sub-packages
+            if (isset($suggestions['packages'][$_POST['name']]['require'])) {
+                foreach ($suggestions['packages'][$_POST['name']]['require'] as $k => $v) {
+                    if (!isset($composerJson['require'][$k])) {
+                        $composerJson['require'][$k] =
+                    }
+                }
+            }
+            echo L('element_added') . "\n";
+        }
+
+        // action "remove it from the list"
+        if ($_POST['action'] == 'false') {
+            // remove the package
+            unset($composerJson['require'][$_POST['name']]);
+
+            // remove sub-packages
+            if (isset($suggestions['packages'][$_POST['name']]['require'])) {
+                foreach ($suggestions['packages'][$_POST['name']]['require'] as $k => $v) {
+                    unset($composerJson['require'][$k]);
+                }
+            }
+            echo L('element_removed') . "\n";
+        }
+
+        // write the JSON file
+        $json = stripslashes(json_encode($composerJson));
+        file_put_contents('composer.json', $json);
+        chmod('composer.json', 0777);
+
+        // call composer itself ////////////////////////////////////////////////////////////////////
+
+        // define some environment variables for the commandline application
+        putenv('PATH=' . $_SERVER['PATH']);
+        putenv('COMPOSER_HOME=' . __DIR__);
+        putenv('HOME=' . __DIR__);
+
+        // call composer via command line
+        passthru('php composer.phar ' . $installAction . ' --no-interaction', $out);
+        echo $out;
+
+        // fix the access rights
+        foreach (array('backend', 'vendor', 'cache') as $dir) {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+            foreach ($iterator as $item) {
+                chmod($item, 0777);
+            }
+        }
+        unlink('.htaccess');
+
+        exit;
+    }
+}
+
+
+// create the list of packages ///////////////////////////////////////////
 // first LI contains the heading (searchbox, pagination...)
 $body .= '<div><ul><li><form id="packageheader" method="get" action="install.php">'
     . '<span style="float:right">'
