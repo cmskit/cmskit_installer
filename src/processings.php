@@ -80,7 +80,7 @@ if (!empty($_POST['action'])) {
             if (isset($suggestions['packages'][$_POST['name']]['require'])) {
                 foreach ($suggestions['packages'][$_POST['name']]['require'] as $k => $v) {
                     if (!isset($composerJson['require'][$k])) {
-                        $composerJson['require'][$k] =
+                        $composerJson['require'][$k] = $v;
                     }
                 }
             }

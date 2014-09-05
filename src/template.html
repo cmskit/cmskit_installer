@@ -81,7 +81,7 @@ $(document).ready(function()
 			})
 		}
 	});
-	//
+
 	$(".package").button().on("click", function()
 	{
 		var c = $(this).text() === "'.L('install').'",
@@ -91,11 +91,11 @@ $(document).ready(function()
 		{
 			
 			$("#spinner").show();
-			$.post("install.php",
+			$.post("install.php?'.http_build_query($_GET).'",
 			{
 				action: c,
-				name: $(this).data("name"),
-				version: $(this).data("version")
+				name: $(this).data("name")
+				/*version: $(this).data("version")*/
 			},
 			function(d) {
 				$("#spinner").hide();

@@ -4,7 +4,7 @@
 
 This installation script is a web frontend and wrapper to [composer](https://getcomposer.org), a command line application to manage installations.
 
-It is packed as a single-file application so you don't need anything but this file.
+It is packed as a single-file application so you don't need any additional files.
 
 * Download install.php and upload it to your web server
 * Call install.php via web and coose te packages you want to install

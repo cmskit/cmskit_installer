@@ -29,6 +29,10 @@ if (!file_exists('index.php')) {
     file_put_contents('index.php', '<?php header(\'location: backend/\');');
 }
 
+if (!file_exists('projects')) {
+	mkdir('projects', 0777);
+}
+
 if (version_compare(PHP_VERSION, '5.3.3') == -1) {
     exit(PHP_VERSION . ' ' . L('this_php_version_is_too_low'));
 }
@@ -66,4 +70,4 @@ if (file_exists('backend/inc/super.php')) {
             . '<input type="submit" value="' . L('log_in') . '" /></form>' . $html[1];
         exit;
     }
-}// running installation END
+}// user check END

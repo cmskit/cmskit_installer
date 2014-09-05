@@ -8,6 +8,7 @@ composer-dl.inc
 composer.json
 composer.lock
 backend
+projects
 vendor
 cache
 index.php

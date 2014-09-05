@@ -1,15 +1,14 @@
 <?php
 # cms-kit installation script
-# compiled at 2014-08-27 13:23:50
-# 
+# compiled at 2014-09-05 14:15:54
+# This installation script is a web frontend and a wrapper to [composer](https://getcomposer.org)
 # Shrunk with http://code.google.com/p/php-compressor
 
 session_start();
 date_default_timezone_set('UTC');
 error_reporting(E_ALL^E_NOTICE);
 $serviceUrl='http://localhost/cmskit_suggestions/';
-if(isset($_GET['captcha']))
-{
+if(isset($_GET['captcha'])){
 $ch='23456789abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ';$s='';
 for($i=0;$i<5;$i++)$s.=$ch[mt_rand(0,strlen($ch)-1)];
 $_SESSION['captcha_answer']=$s;
@@ -28,8 +27,7 @@ imagepng($i);
 imagedestroy($i);
 exit;
 }
-if(get_magic_quotes_gpc())
-{
+if(get_magic_quotes_gpc()){
 function stripslashes_gpc(&$value)
 {
 $value=stripslashes($value);
@@ -64,7 +62,7 @@ $LL['en']=array(
 'no_description_available'=>'no description available',
 'please_wait'=>'please wait',
 );
-$lang=browserLang(array('de','en'),'en');
+$lang=bl(array('de','en'),'en');
 $html=array('<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -148,7 +146,7 @@ $(document).ready(function()
 			})
 		}
 	});
-	//
+
 	$(".package").button().on("click", function()
 	{
 		var c = $(this).text() === "'.L('install').'",
@@ -158,11 +156,11 @@ $(document).ready(function()
 		{
 			
 			$("#spinner").show();
-			$.post("install.php",
+			$.post("install.php?'.http_build_query($_GET).'",
 			{
 				action: c,
-				name: $(this).data("name"),
-				version: $(this).data("version")
+				name: $(this).data("name")
+				/*version: $(this).data("version")*/
 			},
 			function(d) {
 				$("#spinner").hide();
@@ -198,31 +196,24 @@ $(document).ready(function()
 ');
 function crpt($pass,$salt)
 {
-if(defined('CRYPT_BLOWFISH')&&CRYPT_BLOWFISH)
-{
+if(defined('CRYPT_BLOWFISH')&&CRYPT_BLOWFISH){
 $msalt='$2a$07$'.substr(md5($salt),0,22).'$';
 return$salt.':'.md5(crypt($pass,$msalt));
-}
-else
-{
+}else{
 return$salt.':'.md5(md5(md5(md5(md5(md5(md5($salt.$pass)))))));
 }
 }
-function browserLang($arr=array('en'),$default='en')
+function bl($arr=array('en'),$default='en')
 {
 $al=strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 $ua=strtolower($_SERVER['HTTP_USER_AGENT']);
-foreach($arr as$k)
-{
-if(strpos($al,$k)===0||strpos($al,$k)!==false)
-{
+foreach($arr as$k){
+if(strpos($al,$k)===0||strpos($al,$k)!==false){
 return$k;
 }
 }
-foreach($arr as$k)
-{
-if(preg_match("/[\[\( ]{$k}[;,_\-\)]/",$ua))
-{
+foreach($arr as$k){
+if(preg_match("/[\[\( ]{$k}[;,_\-\)]/",$ua)){
 return$k;
 }
 }
@@ -234,7 +225,7 @@ global$LL,$lang;
 if(!empty($lang)&&isset($LL[$lang][$str])){
 return$LL[$lang][$str];
 }else{
-if(!isset($LL['x'][$str])){file_put_contents('./ll.txt',"'".$lang.'/'.$str."' => '".$str."',".PHP_EOL,FILE_APPEND);}$LL['x'][$str]=1;
+$LL['x'][$str]=1;
 return str_replace('_',' ',$str);
 }
 }
@@ -260,28 +251,26 @@ exit(L('directory_is_not_writable'));
 if(!file_exists('index.php')){
 file_put_contents('index.php','<?php header(\'location: backend/\');');
 }
+if(!file_exists('projects')){
+mkdir('projects',0777);
+}
 if(version_compare(PHP_VERSION,'5.3.3')==-1){
 exit(PHP_VERSION.' '.L('this_php_version_is_too_low'));
 }
-if(isset($_GET['logout']))
-{
+if(isset($_GET['logout'])){
 unset($_SESSION['ACCEPTED']);
 }
-if(file_exists('backend/inc/super.php'))
-{
+if(file_exists('backend/inc/super.php')){
 include'backend/inc/super.php';
 $body.='<a style="float:right" href="install.php?logout=1">'.L('logout').'</a>';
-if(!empty($_POST['password'])&&!empty($_POST['captcha']))
-{
+if(!empty($_POST['password'])&&!empty($_POST['captcha'])){
 if((crpt(substr($_POST['password'],0,200),$super[0])===$super[0].':'.$super[1])
 &&(isset($_SESSION['captcha_answer'])&&$_POST['captcha']===$_SESSION['captcha_answer'])
-)
-{
+){
 $_SESSION['ACCEPTED']=1;
 }
 }
-if(empty($_SESSION['ACCEPTED']))
-{
+if(empty($_SESSION['ACCEPTED'])){
 echo$html[0].'<form class="loginbox" method="post" action="install.php">'
 .'<p><img src="install.php?captcha=1" /></p>'
 .'<p><input type="text" autocomplete="off" name="captcha" placeholder="'.L('enter_captcha').'" /></p>'
@@ -290,24 +279,18 @@ echo$html[0].'<form class="loginbox" method="post" action="install.php">'
 exit;
 }
 }
-if(!file_exists('composer.phar'))
-{
+if(!file_exists('composer.phar')){
 download('https://getcomposer.org/installer','composer-dl.inc');
 echo$html[0].'<h3>composer downloaded</h3><a href="install.php">please reload</a><pre>';
 chmod('composer-dl.inc',0777);
 include'composer-dl.inc';
 exit('</pre>'.$html[1]);
-}
-else
-{
+}else{
 @unlink('composer-dl.inc');
 }
-if(file_exists('composer.json'))
-{
+if(file_exists('composer.json')){
 $composerJson=json_decode(file_get_contents('composer.json'),true);
-}
-else
-{
+}else{
 $composerJson=array(
 'minimum-stability'=>'dev',
 'require'=>array(
@@ -317,26 +300,36 @@ $composerJson=array(
 }
 $installedPackages=array();
 $installAction='install';
-if(file_exists('composer.lock'))
-{
+if(file_exists('composer.lock')){
 $lock=json_decode(file_get_contents('composer.lock'),true);
-if(isset($lock['packages']))
-{
-foreach($lock['packages']as$p)
-{
+if(isset($lock['packages'])){
+foreach($lock['packages']as$p){
 $installedPackages[$p['name']]=$p;
 }
 }
 $installAction='update';
 }
-if(!empty($_POST['action']))
-{
+$suggestions=json_decode(download($serviceUrl.'/?'.http_build_query($_GET)),true);
+if(!empty($_POST['action'])){
+if(isset($suggestions['packages'][$_POST['name']])){
 if($_POST['action']=='true'){
-$composerJson['require'][$_POST['name']]=$_POST['version'];
+$composerJson['require'][$_POST['name']]=$suggestions['packages'][$_POST['name']]['version'];
+if(isset($suggestions['packages'][$_POST['name']]['require'])){
+foreach($suggestions['packages'][$_POST['name']]['require']as$k=>$v){
+if(!isset($composerJson['require'][$k])){
+$composerJson['require'][$k]=$v;
+}
+}
+}
 echo L('element_added')."\n";
 }
 if($_POST['action']=='false'){
 unset($composerJson['require'][$_POST['name']]);
+if(isset($suggestions['packages'][$_POST['name']]['require'])){
+foreach($suggestions['packages'][$_POST['name']]['require']as$k=>$v){
+unset($composerJson['require'][$k]);
+}
+}
 echo L('element_removed')."\n";
 }
 $json=stripslashes(json_encode($composerJson));
@@ -356,7 +349,7 @@ chmod($item,0777);
 unlink('.htaccess');
 exit;
 }
-$suggestions=json_decode(download($serviceUrl.'/?'.http_build_query($_GET)),true);
+}
 $body.='<div><ul><li><form id="packageheader" method="get" action="install.php">'
 .'<span style="float:right">'
 .(!empty($suggestions['stat']['back'])?'<button type="button" rel="circle-triangle-w" type="button">'.L('back').'</button>':'')
@@ -366,8 +359,7 @@ $body.='<div><ul><li><form id="packageheader" method="get" action="install.php">
 .'<button type="submit" rel="search" type="button">'.L('search').'</button>'
 .'</form></li>';
 $c=0;
-foreach($suggestions['packages']as$k=>$v)
-{
+foreach($suggestions['packages']as$k=>$v){
 $body.='<li><h3>'.$k.'</h3><p>'
 .'<span class="pspan"><button class="package" id="cb'.$c.'" type="button" '
 .'data-name="'.$k.'" data-version="'.$v['version'].'" '
